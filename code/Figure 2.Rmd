@@ -200,9 +200,16 @@ ggplot(data = total_df_tidy, aes(x = activity, y = counts)) +
   labs(x = "Ocean Activity",
        y = "Count",
        fill = "Co-located Activity") +
-  theme_minimal() +
-  scale_fill_paletteer_d(palette = "calecopal::bigsur") +
-  theme(axis.text.x = element_text(angle = 30))
+  theme_classic() +
+  scale_fill_paletteer_d(palette = "ggprism::black_and_white") +
+  # theme(axis.text.x = element_text(angle = 30)) +
+  geom_text(aes("Aquaculture", 82,label = "n=80", hjust= .5), size = 3) + # n values from sums df
+  geom_text(aes("Tidal", 49,label = "n=47", hjust= .5), size = 3) +
+  geom_text(aes("Wave", 87,label = "n=85", hjust= .5), size = 3) +
+  geom_text(aes("Wind", 118,label = "n=116", hjust= .5), size = 3) +
+  geom_text(aes("Other", 68,label = "n=66", hjust= .5), size = 3)
+
+# colorful pallete is "calecopal::bigsur"
 ```
 
 **Figure 2.** Shows each ocean activity and its frequency of co-location with another ocean activity. Wind energy was most often referenced being co-located with other ocean activities (n = `r sum$total[4]`), followed by wave energy (n = `r sum$total[3]`), aquaculture (n = `r sum$total[1]`), and tidal energy (n = `r sum$total[2]`). Other forms of marine energy or ocean activities were referenced being co-located with other ocean activities `r sum$total[5]` times. Many publications referenced multiple interacting co-locating activities. Instances in which ocean activities are co-located with themselves are not considered here.  
@@ -214,16 +221,18 @@ ggsave(filename = here("figures", "fig2.jpeg"), width = 7, height = 5, units = "
 
 
 ### Data Viz 2
+**Hidden**
+Decided Viz 1 was better
 
 Trying another approach using percentage instead of counts.
 
-```{r}
+```{r, eval=FALSE, include=FALSE}
 ggplot(data = total_df_tidy, aes(x = activity, y = counts)) +
   geom_bar(position="fill", stat="identity", aes(fill = buddy)) +
   labs(x = "Ocean Activity",
        y = "Percentage",
        fill = "Co-located Activity") +
-  theme_minimal() +
+  theme_classic() +
   scale_fill_paletteer_d(palette = "calecopal::bigsur") +
   theme(axis.text.x = element_text(angle = 30)) +
   geom_text(aes("Aquaculture",1.03,label = "n=80", hjust= .5), size = 3) + # n values from sums df
