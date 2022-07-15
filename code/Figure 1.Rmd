@@ -56,11 +56,14 @@ data_sub <- mydata %>%
 # count of publications over time
 
 g1 <- ggplot(data = data_sub, aes(x = year, y = count)) +
-  geom_line(color = "darkgray", size = .7) +
+  geom_line(size = .7) +
   labs(x = "Year",
        y = "Count") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45))
+  ylim(0,15) +
+  theme_classic() 
+
+# +
+#   theme(axis.text.x = element_text(angle = 45))
 
 ggplotly(g1)
 ```
@@ -68,6 +71,27 @@ ggplotly(g1)
 ### Pane 2 Wrangling
 
 This might be semi sloppy code and there might be a cleaner way to do this but I'm not sure what that would be and I feel confident in the messy coding I've done here. 
+
+
+```{r, eval=FALSE, include=FALSE}
+# now same for total section
+# I added this chunk much later (7/15) to try and visualize total line on same axis with category lines
+
+total <- rep(c("Total"), times = 12)
+
+total_sub <- cbind(data_sub$year,
+                   total,
+                   data_sub$count
+                    )
+
+total_b_df <- data.frame(total_sub) %>% 
+  rename(year = V1) %>% 
+  rename(discipline = total) %>% 
+  rename(count = V3)
+
+```
+
+
 ```{r}
 # Need to rearrange the data for pane 2
 # Plan to create a subset that filters for all the ecology counts and totals them over time
@@ -102,7 +126,6 @@ data_sub_b_socio <- mydata %>%
 
 socioecon <- rep(c("Socioeconomics"), times = 12)
 
-#can use the colnames value from above
 
 socio_sub <- cbind(data_sub_b_socio$year,
               socioecon,
@@ -124,7 +147,6 @@ data_sub_b_gov <- mydata %>%
 
 governance <- rep(c("Governance"), times = 12)
 
-#can use the colnames value from above
 
 gov_sub <- cbind(data_sub_b_gov$year,
               governance,
@@ -136,14 +158,22 @@ gov_df <- data.frame(gov_sub) %>%
   rename(count = V3)
 ```
 
+
 ```{r}
 # rbinding the 3 dfs into one
 
-all_df <- rbind(ecol_df, gov_df, socio_df) %>% 
+all_df <- rbind(#total_b_df, 
+                ecol_df, gov_df, socio_df) %>% 
   mutate(year = as.numeric(year)) %>% 
   mutate(count = as.integer(count))
 
 # class was checked and its a data frame
+
+# all_df$discipline <- factor(all_df$discipline,
+#                             levels = c("Total",
+#                                        "Ecology",
+#                                        "Governance",
+#                                        "Socioeconomics"))
 
 ```
 
@@ -153,12 +183,13 @@ Using ggplotly() here to allow us to look at each value, when needed.
 
 ```{r}
 g2 <- ggplot(data = all_df, aes(x = year, y = count)) +
-  geom_line(aes(color = discipline), size = .7) +
+  geom_line(aes(linetype = discipline), color = "darkgray", 
+            size = .7) +
   labs(x = "Year",
        y = "Count") +
-  theme_minimal() +
-  theme(legend.title = element_blank(), legend.position= 'bottom', axis.text.x = element_text(angle = 45)) +
-  scale_colour_manual(values = c("Ecology" = "#00BA38", "Governance" = "#619CFF", "Socioeconomics" = "#F8766D"))
+  scale_y_continuous(limits = c(0,13), breaks = seq(0,13, by = 5)) +
+  theme_classic() +
+  theme(legend.title = element_blank(), legend.position= 'top')
 
 ggplotly(g2)
 ```
@@ -170,7 +201,7 @@ Using cowplot package and `plot_grid()` to patch panes 1 and 2 together
 ```{r}
 plot_grid(g1, g2, labels = c("A", "B"))
 
-# ggsave(filename = here("figures", "fig1.jpeg"), width = 7, height = 4, units = "in")
+ggsave(filename = here("figures", "fig1.jpeg"), width = 8, height = 4, units = "in")
 
 ```
 
