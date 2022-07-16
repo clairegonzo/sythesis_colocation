@@ -27,6 +27,7 @@ library(lubridate)
 library(plotly)
 library(paletteer)
 library(cowplot)
+library(broom)
 
 ```
 
@@ -60,13 +61,60 @@ g1 <- ggplot(data = data_sub, aes(x = year, y = count)) +
   labs(x = "Year",
        y = "Count") +
   ylim(0,15) +
-  theme_classic() 
+  theme_classic() +
+  geom_smooth(method = "lm")
 
 # +
 #   theme(axis.text.x = element_text(angle = 45))
 
 ggplotly(g1)
 ```
+
+```{r, include=FALSE, eval=FALSE}
+# regression of g1
+
+g1_lm <- lm(data_sub$count ~ data_sub$year)
+
+summary(g1_lm)
+
+tidy(g1_lm)
+
+## slope here is 0.9361 with an r^2 value of 0.769
+# "If everything else stays constant, on average we would except an increase of .9361 co-location publications per year" and 76.9% of the variants are explained by this model
+
+```
+
+
+```{r, eval=FALSE, include=FALSE}
+
+# This is to look at regression of only the years 2013 and 2015
+
+ggplotly(
+  ggplot(data = data_sub, aes(x = year, y = count)) +
+  geom_line(size = .7) +
+  labs(x = "Year",
+       y = "Count") +
+  xlim(2013,2017) +
+  theme_classic() +
+  geom_smooth(method = "lm")
+)
+```
+
+```{r, include=FALSE, eval=FALSE}
+# regression of g1 ONLY the time period of substantial growth (2013-2017)
+
+data_sub_filt <- data_sub %>% 
+  filter(year %in% 2013:2017)
+
+g1_sub_lm <- lm(data_sub_filt$count ~ data_sub_filt$year)
+
+summary(g1_sub_lm)
+
+## slope here is 2.8 with an r^2 value of 0.9333
+# "If everything else stays constant, on average we would except an increase of 2.8 co-location publications per year" and 93% of the variants are explained by this model
+
+```
+
 
 ### Pane 2 Wrangling
 
