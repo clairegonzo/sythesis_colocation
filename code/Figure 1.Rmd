@@ -80,7 +80,7 @@ summary(g1_lm)
 tidy(g1_lm)
 
 ## slope here is 0.9361 with an r^2 value of 0.769
-# "If everything else stays constant, on average we would except an increase of .9361 co-location publications per year" and 76.9% of the variants are explained by this model
+# "If everything else stays constant, on average we would expect an increase of .9361 co-location publications per year" and 76.9% of the variants are explained by this model
 
 ```
 
@@ -111,7 +111,7 @@ g1_sub_lm <- lm(data_sub_filt$count ~ data_sub_filt$year)
 summary(g1_sub_lm)
 
 ## slope here is 2.8 with an r^2 value of 0.9333
-# "If everything else stays constant, on average we would except an increase of 2.8 co-location publications per year" and 93% of the variants are explained by this model
+# "If everything else stays constant, on average we would expect an increase of 2.8 co-location publications per year" and 93% of the variants are explained by this model
 
 ```
 
