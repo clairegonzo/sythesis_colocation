@@ -1,0 +1,69 @@
+---
+title: "Metrics and Stats"
+author: 'By: Claire Gonzales'
+date: '2022-07-21'
+output: 
+  html_document: 
+    theme: lumen
+    code_folding: hide
+---
+
+### Description
+
+**OBJECTIVE**: The objective for this script is to create descriptive metric and stats from the original data csv file. These values will be useful for table creation and in-text descriptions 
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+	message = FALSE,
+	warning = FALSE)
+
+library(tidyverse)
+library(here)
+
+```
+
+### Reading in Data
+
+```{r}
+mydata <- read_csv(here("data", "Data_total_working_for_r.csv"))
+```
+
+
+```{r}
+mydata_sub <- mydata %>% 
+  select(year, id, ecology, governance, socioecon, aquaculture_present, wind_present, wave_present, tidal_present, other_present)
+
+```
+
+
+### Wrangling
+
+```{r}
+discipline_eco <- mydata_sub %>% 
+  group_by(ecology) %>% 
+  filter(ecology == 1) %>% 
+  summarize(sum = sum(ecology))
+
+discipline_gov <- mydata_sub %>%
+  group_by(governance) %>% 
+  filter(governance == 1) %>% 
+  summarize(sum = sum(governance))
+
+discipline_socio <- mydata_sub %>%
+  group_by(socioecon) %>% 
+  filter(socioecon == 1) %>% 
+  summarize(sum = sum(socioecon))
+  
+```
+
+
+```{r}
+
+names <- c("ecology", "governance", "socioeconomics")
+sum <- c(discipline_eco$sum, discipline_gov$sum, discipline_socio$sum)
+
+discipline <- data.frame(cbind(names, sum))
+```
+
+
