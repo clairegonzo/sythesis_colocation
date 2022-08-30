@@ -148,14 +148,18 @@ ggplot(data = datadata, aes(x = metric, y = distance_to_shore)) +
                size=3, 
                color="black", 
                fill="black") +
-  theme_minimal()
+  labs(x = "Ocean activity",
+       y = "Distance from shore (m)") +
+  theme_minimal() +
+  theme(legend.title = element_blank())
 
-## Compare these with a PERMANOVA or and ANOVA. First do the calc with the overlapping values and then do it without the overlapping values. If the value is the same, dont worry about the violated assumption.
 ```
+
+**Figure 4.** Shows the distances from shore (meters) across the three most common ocean activities listed in co-location literature. Metrics withing aquaculture (n = ), wave energy (n = ), and wind energy (n = ) all reflect  similar distances from shore. Significance across these three data groups was checked using a Kruskal-Wallis test (p = 0.394).
 
 Comparing maximum listed depths across discipline
 ```{r}
-ggplot(data = datadata, aes(x = metric, y = depth_max)) +
+ggplot(data = datadata, aes(x = metric, y = depth_ave)) +
   geom_beeswarm(aes(color = metric)) +
   scale_color_manual(values = c("goldenrod2","cyan4","coral")) +
   geom_boxplot(fill = NA, width = 0.3, outlier.color = NA) +
@@ -165,11 +169,17 @@ ggplot(data = datadata, aes(x = metric, y = depth_max)) +
                size=3, 
                color="black", 
                fill="black") +
-  theme_minimal()
+    labs(x = "Ocean Activity",
+         y = "Average Depth (m)") +
+  theme_minimal() +
+  theme(legend.title = element_blank())
 ```
 
+**Figure 5.** Shows the average depth (meters) across the three most common ocean activities listed in co-location literature. Metrics withing aquaculture (n = ), wave energy (n = ), and wind energy (n = ) all reflect  similar distances from shore. Significance across these three data groups was checked using a Kruskal-Wallis test (p = 0.551). 
+
+
 Comparing minimum listed depths across discipline
-```{r}
+```{r, include=FALSE, eval=FALSE}
 ggplot(data = datadata, aes(x = metric, y = depth_min)) +
   geom_beeswarm(aes(color = metric)) +
   scale_color_manual(values = c("goldenrod2","cyan4","coral")) +
@@ -226,7 +236,7 @@ summary(datadata_anova)
 
 ```
 
-Making the same comparison using a Kruskal-Wallis test
+Making the same comparison using a Kruskal-Wallis test.
 ```{r}
 datadata_kruswall <- kruskal.test(depth_ave ~ metric, data = datadata)
 
@@ -234,6 +244,35 @@ datadata_kruswall
 
 # depth_ave: p-value = 0.4673
 # distance to shore: p-value = 0.3366
+```
+Kruskal Wallis test is the better test for this data because we violate the assumtions of the ANOVA, but a Kruskal Wallis test does not require these assumptions. Kruskal Wallis is non-parametric and ranks-based assessment of medians 
+
+### Sample sizes
+Determining the n values of distance from shore and average depth for each ocean activity in datadata
+
+summary_datadata has the median values
+nvals_datadata has the n values
+```{r}
+summary_datadata <- datadata %>% 
+  group_by(metric) %>% 
+  summarize(median_depth = median(depth_ave, na.rm = TRUE),
+            median_dist = median(distance_to_shore, na.rm = TRUE))
+
+
+nvals_datadata_depth <- datadata %>% 
+  filter(depth_ave != "NA") %>% 
+  group_by(metric) %>% 
+  summarize(n_depth = n())
+
+nvals_datadata_dist <- datadata %>% 
+  filter(distance_to_shore != "NA") %>% 
+  group_by(metric) %>% 
+  summarize(n_dist = n()) %>% 
+  rename(metric_dist = metric) #renaming because r was getting confused by 2 columns with same name in cbind()
+
+nvals_datadata <- as_tibble(cbind(nvals_datadata_depth, nvals_datadata_dist)) %>% 
+  select("metric", "n_depth", "n_dist")
+              
 ```
 
 
