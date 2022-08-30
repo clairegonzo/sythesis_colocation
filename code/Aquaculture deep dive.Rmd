@@ -19,6 +19,7 @@ library(tidyselect)
 library(here)
 library(ggbeeswarm)
 library(dplyr)
+library(rstatix)
 
 ```
 
@@ -220,6 +221,19 @@ datadata_anova <- aov(depth_ave ~ metric, data = datadata)
 
 summary(datadata_anova)
 
+# depth_ave: p-value = 0.551
+# distance to shore: p-value = 0.394
+
+```
+
+Making the same comparison using a Kruskal-Wallis test
+```{r}
+datadata_kruswall <- kruskal.test(depth_ave ~ metric, data = datadata)
+
+datadata_kruswall
+
+# depth_ave: p-value = 0.4673
+# distance to shore: p-value = 0.3366
 ```
 
 
