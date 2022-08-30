@@ -1,0 +1,339 @@
+---
+title: "Aqauculture Deep Dive"
+author: 'By: Claire Gonzales'
+date: '2022-08-16'
+output: 
+  html_document: 
+    theme: lumen
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+library(tidyverse)
+library(tidyselect)
+library(here)
+library(ggbeeswarm)
+library(dplyr)
+
+```
+
+
+```{r}
+mydata <- read_csv(here("data", "Data_total_working_for_r.csv"))
+  
+```
+
+```{r}
+aquaculture <- mydata %>% 
+  select(id, year, aquaculture_present, ecology, governance, socioecon) %>% 
+  filter(aquaculture_present == "1")
+
+aqua_mini <- aquaculture %>% 
+  group_by(aquaculture_present) %>% 
+  summarize(
+    eco = sum(ecology),
+    gov = sum(governance),
+    socio = sum(socioecon)
+  )
+  
+```
+
+```{r}
+wind <- mydata %>% 
+  select(id, year, wind_present, ecology, governance, socioecon) %>% 
+  filter(wind_present == "1")
+
+wind_mini <- wind %>% 
+  group_by(wind_present) %>% 
+  summarize(
+    eco = sum(ecology),
+    gov = sum(governance),
+    socio = sum(socioecon)
+  )
+```
+
+```{r}
+max_depth_m <- as.numeric(c(25, 16, 33.4, 40, 200, 500, 70, 40, 300, 60, 40, 200, 300, 200))
+
+median(max_depth_m)
+
+```
+
+```{r}
+distance_km <- as.numeric(c(15, 16, 55, 10, 30, 8, 1.2, 1.9, 37, 60, 22, 16, 32, 25))
+
+median(distance_km)
+```
+
+```{r}
+sigwaveheight_m <- as.numeric(c(1.5, 1.25, 2.1, 2, 2, 1.8, 5))
+
+median(sigwaveheight_m)
+```
+
+## Incorporating metrics 
+Looking into aquaculture metrics
+```{r}
+aqdata <- read.csv(here("data", "Data_total_working_for_r_aq.csv"))
+```
+
+```{r}
+aqdata_sub <- aqdata %>% 
+  filter(metric == "Aquaculture") %>% 
+  select("metric", "id", "title", "distance_to_shore", "depth_min", "depth_max", "depth_ave", "wave_height_average_m", "sst_c", "chla") 
+  
+aqdata_sub_2 <- aqdata %>% 
+  filter(metric == "Aquaculture") %>% 
+  select("metric", "id", "title", "distance_to_shore", "depth_min", "depth_max", "depth_ave", "wave_height_average_m", "sst_c", "chla", "wind_present", "wave_present", "tidal_present", "other_present") 
+  
+  
+  # summarize(dist_median = median(distance_to_shore, na.rm = TRUE),
+  #           depth_max_median = median(depth_max, na.rm = TRUE),
+  #           sigwave_median = median(wave_height_average_m, na.rm = TRUE),
+  #           sst_median = median(sst_c, na.rm = TRUE),
+  #           chla_median = median(chla, na.rm = TRUE))
+```
+
+Looking at wind metrics
+```{r}
+winddata <- read.csv(here("data", "Data_total_working_for_r_wind.csv"))
+```
+
+```{r}
+winddata_sub <- winddata %>% 
+  filter(metric == "Wind") %>% 
+  select("metric", "id", "title", "distance_to_shore", "depth_min", "depth_max", "depth_ave", "wave_height_average_m", "sst_c", "chla") 
+
+
+  # group_by(metric) %>% 
+  # summarize(dist_median = median(distance_to_shore, na.rm = TRUE),
+  #           depth_max_median = median(depth_max, na.rm = TRUE),
+  #           sigwave_median = median(wave_height_average_m, na.rm = TRUE),
+  #           sst_median = median(sst_c, na.rm = TRUE),
+  #           chla_median = median(chla, na.rm = TRUE))
+```
+
+```{r}
+wavedata <- read.csv(here("data", "Data_total_working_for_r_wave.csv"))
+```
+
+```{r}
+wavedata_sub <- wavedata %>% 
+  filter(metric == "Wave") %>% 
+  select("metric", "id", "title", "distance_to_shore", "depth_min", "depth_max", "depth_ave", "wave_height_average_m", "sst_c", "chla")
+```
+
+
+```{r}
+datadata <- rbind(aqdata_sub, winddata_sub, wavedata_sub)
+```
+
+
+Comparing distances to shore across discipline
+
+```{r}
+ggplot(data = datadata, aes(x = metric, y = distance_to_shore)) +
+  geom_beeswarm(aes(color = metric)) +
+  scale_color_manual(values = c("goldenrod2","cyan4","coral")) +
+  geom_boxplot(fill = NA, width = 0.3, outlier.color = NA) +
+  stat_summary(fun=median, 
+               geom="point", 
+               shape=20, 
+               size=3, 
+               color="black", 
+               fill="black") +
+  theme_minimal()
+
+## Compare these with a PERMANOVA or and ANOVA. First do the calc with the overlapping values and then do it without the overlapping values. If the value is the same, dont worry about the violated assumption.
+```
+
+Comparing maximum listed depths across discipline
+```{r}
+ggplot(data = datadata, aes(x = metric, y = depth_max)) +
+  geom_beeswarm(aes(color = metric)) +
+  scale_color_manual(values = c("goldenrod2","cyan4","coral")) +
+  geom_boxplot(fill = NA, width = 0.3, outlier.color = NA) +
+  stat_summary(fun=median, 
+               geom="point", 
+               shape=20, 
+               size=3, 
+               color="black", 
+               fill="black") +
+  theme_minimal()
+```
+
+Comparing minimum listed depths across discipline
+```{r}
+ggplot(data = datadata, aes(x = metric, y = depth_min)) +
+  geom_beeswarm(aes(color = metric)) +
+  scale_color_manual(values = c("goldenrod2","cyan4","coral")) +
+  geom_boxplot(fill = NA, width = 0.3, outlier.color = NA) +
+  stat_summary(fun=median, 
+               geom="point", 
+               shape=20, 
+               size=3, 
+               color="black", 
+               fill="black") +
+  theme_minimal()
+```
+
+Comparing maximum listed significant wave heights across discipline
+```{r}
+ggplot(data = datadata, aes(x = metric, y = wave_height_average_m)) +
+  geom_beeswarm(aes(color = metric)) +
+  scale_color_manual(values = c("goldenrod2","cyan4","coral")) +
+  geom_boxplot(fill = NA, width = 0.3, outlier.color = NA) +
+  stat_summary(fun=median, 
+               geom="point", 
+               shape=20, 
+               size=3, 
+               color="black", 
+               fill="black") +
+  theme_minimal()
+```
+
+Comparing SSTs (degrees celcius) across disciplines
+```{r}
+ggplot(data = datadata, aes(x = metric, y = sst_c)) +
+  geom_beeswarm(aes(color = metric)) +
+  scale_color_manual(values = c("goldenrod2","cyan4","coral")) +
+  geom_boxplot(fill = NA, width = 0.3, outlier.color = NA) +
+  stat_summary(fun=median, 
+               geom="point", 
+               shape=20, 
+               size=3, 
+               color="black", 
+               fill="black") +
+  theme_minimal()
+```
+
+## ANOVA of aquaculture metrics
+
+Comparing aquaculture metrics against wind and wave
+```{r}
+datadata_anova <- aov(depth_ave ~ metric, data = datadata)
+
+summary(datadata_anova)
+
+```
+
+
+### Depth of Aquaculture Projects
+
+```{r}
+aqua_wind <- aqdata_sub_2 %>% 
+  filter(wind_present == "1") %>% 
+  mutate(buddy = rep("wind", 16))
+```
+
+```{r}
+aqua_wave <- aqdata_sub_2 %>% 
+  filter(wave_present == "1") %>% 
+  mutate(buddy = rep("wave", 4))
+
+```
+
+```{r}
+aqua_tidal <- aqdata_sub_2 %>% 
+  filter(tidal_present == "1") %>% 
+  mutate(buddy = rep("tidal", 2))
+
+
+```
+
+```{r}
+aqua_other <- aqdata_sub_2 %>% 
+  filter(other_present == "1") %>% 
+  mutate(buddy = rep("other", 7))
+
+
+```
+
+```{r}
+alltogether <- as_tibble(rbind(aqua_wind, aqua_wave, aqua_tidal, aqua_other))
+```
+
+
+Graphing the depth differences of aquaculture at different depths
+```{r}
+ggplot(data = alltogether, aes(x = metric, y = depth_ave)) +
+  geom_jitter(aes(color = buddy)) +
+  scale_color_manual(values = c("goldenrod2","cyan4","coral", "darkviolet")) +
+  geom_boxplot(fill = NA, width = 0.3, outlier.color = NA) +
+  stat_summary(fun=median,
+               geom="point",
+               shape=20,
+               size=4,
+               color="black",
+               fill="black") +
+  theme_minimal() +
+  scale_y_reverse()
+```
+
+
+```{r}
+ggplot(data = alltogether, aes(x = buddy, y = depth_ave)) +
+  geom_beeswarm(aes(color = buddy)) +
+  scale_color_manual(values = c("goldenrod2","cyan4","coral", "darkviolet")) +
+  geom_boxplot(fill = NA, width = 0.3, outlier.color = NA) +
+  stat_summary(fun=median,
+               geom="point",
+               shape=20,
+               size=3,
+               color="black",
+               fill="black") +
+  theme_minimal() +
+  scale_y_reverse()
+```
+
+Graphing the depth differences of aquaculture at different distances from shore
+```{r}
+ggplot(data = alltogether, aes(x = metric, y = distance_to_shore)) +
+  geom_jitter(aes(color = buddy)) +
+  scale_color_manual(values = c("goldenrod2","cyan4","coral", "darkviolet")) +
+  geom_boxplot(fill = NA, width = 0.3, outlier.color = NA) +
+  stat_summary(fun=median, 
+               geom="point", 
+               shape=20, 
+               size=4, 
+               color="black", 
+               fill="black") +
+  theme_minimal()
+```
+
+```{r}
+ggplot(data = alltogether, aes(x = buddy, y = distance_to_shore)) +
+  geom_beeswarm(aes(color = buddy)) +
+  scale_color_manual(values = c("goldenrod2","cyan4","coral", "darkviolet")) +
+  geom_boxplot(fill = NA, width = 0.3, outlier.color = NA) +
+  stat_summary(fun=median, 
+               geom="point", 
+               shape=20, 
+               size=3, 
+               color="black", 
+               fill="black") +
+  theme_minimal()
+```
+
+## aquaculture depths with no duplicates
+
+```{r}
+ggplot(data = aqdata_sub_2, aes(x = metric, y = depth_ave)) +
+  geom_jitter(aes(color = metric)) +
+  # scale_color_manual(values = c("goldenrod2","cyan4","coral", "darkviolet")) +
+  geom_boxplot(fill = NA, width = 0.3, outlier.color = NA) +
+  stat_summary(fun=median,
+               geom="point",
+               shape=20,
+               size=3,
+               color="black",
+               fill="black") +
+  theme_minimal() +
+  scale_y_reverse()
+```
+

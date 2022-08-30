@@ -40,6 +40,9 @@ mydata_sub <- mydata %>%
 ### Wrangling
 
 ```{r}
+
+# creating totals for each discipline
+
 discipline_eco <- mydata_sub %>% 
   group_by(ecology) %>% 
   filter(ecology == 1) %>% 
@@ -66,4 +69,42 @@ sum <- c(discipline_eco$sum, discipline_gov$sum, discipline_socio$sum)
 discipline <- data.frame(cbind(names, sum))
 ```
 
+
+```{r}
+# creating totals for each tyoe of ocean activity present
+
+act_aqua <- mydata_sub %>% 
+  group_by(aquaculture_present) %>% 
+  filter(aquaculture_present == 1) %>% 
+  summarize(sum = sum(aquaculture_present))
+
+act_wind <- mydata_sub %>% 
+  group_by(wind_present) %>% 
+  filter(wind_present == 1) %>% 
+  summarize(sum = sum(wind_present))
+  
+act_wave <- mydata_sub %>% 
+  group_by(wave_present) %>% 
+  filter(wave_present == 1) %>% 
+  summarize(sum = sum(wave_present))
+
+act_tidal <- mydata_sub %>% 
+  group_by(tidal_present) %>% 
+  filter(tidal_present == 1) %>% 
+  summarize(sum = sum(tidal_present))
+
+act_other <- mydata_sub %>% 
+  group_by(other_present) %>% 
+  filter(other_present == 1) %>% 
+  summarize(sum = sum(other_present))
+
+```
+
+```{r}
+act_names <- c("aquaculture", "tidal", "wave", "wind", "other")
+
+sums <- c(act_aqua$sum, act_tidal$sum, act_wave$sum, act_wind$sum, act_other$sum)
+
+activity <- data.frame(cbind(act_names, sums))
+```
 
