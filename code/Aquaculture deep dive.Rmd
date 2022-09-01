@@ -217,58 +217,6 @@ fig5a <- ggplot(data = datadata, aes(x = metric, y = distance_to_shore)) +
 
 **Figure 4b.** Shows the distances from shore (meters) across the three most common ocean activities listed in co-location literature. Metrics within aquaculture (n = 14), wave energy (n = 19), and wind energy (n = 32) sectors all reflect similar distances from shore. Significance across these three data groups was checked using a Kruskal-Wallis test (p = 0.3366).
 
-#### ANOVA of aquaculture metrics
-
-Comparing aquaculture metrics against wind and wave
-```{r}
-datadata_anova <- aov(depth_ave ~ metric, data = datadata)
-
-summary(datadata_anova)
-
-# depth_ave: p-value = 0.551
-# distance to shore: p-value = 0.394
-
-```
-
-Making the same comparison using a Kruskal-Wallis test.
-```{r}
-datadata_kruswall <- kruskal.test(depth_ave ~ metric, data = datadata)
-
-datadata_kruswall
-
-# depth_ave: p-value = 0.4673
-# distance to shore: p-value = 0.3366
-```
-Kruskal Wallis test is the better test for this data because we violate the assumtions of the ANOVA, but a Kruskal Wallis test does not require these assumptions. Kruskal Wallis is non-parametric and ranks-based assessment of medians. 
-
-### Sample sizes
-Determining the n values of distance from shore and average depth for each ocean activity in datadata
-
-summary_datadata has the median values
-nvals_datadata has the n values
-```{r}
-summary_datadata <- datadata %>% 
-  group_by(metric) %>% 
-  summarize(median_depth = median(depth_ave, na.rm = TRUE),
-            median_dist = median(distance_to_shore, na.rm = TRUE))
-
-
-nvals_datadata_depth <- datadata %>% 
-  filter(depth_ave != "NA") %>% 
-  group_by(metric) %>% 
-  summarize(n_depth = n())
-
-nvals_datadata_dist <- datadata %>% 
-  filter(distance_to_shore != "NA") %>% 
-  group_by(metric) %>% 
-  summarize(n_dist = n()) %>% 
-  rename(metric_dist = metric) #renaming because r was getting confused by 2 columns with same name in cbind()
-
-nvals_datadata <- as_tibble(cbind(nvals_datadata_depth, nvals_datadata_dist)) %>% 
-  select("metric", "n_depth", "n_dist")
-              
-```
-
 
 ## Other metric comparisons (low n values)
 
@@ -563,3 +511,88 @@ plot_grid(
 ```{r, include=FALSE, eval=FALSE}
 ggsave(filename = here("figures", "fig5.jpeg"), width = 8, height = 5, units = "in")
 ```
+
+
+
+### Kruskal-Wallis of aquaculture metrics
+
+Comparing aquaculture metrics against wind and wave
+```{r}
+datadata_anova <- aov(depth_ave ~ metric, data = datadata)
+
+summary(datadata_anova)
+
+# depth_ave: p-value = 0.551
+# distance to shore: p-value = 0.394
+
+```
+
+Making the same comparison using a Kruskal-Wallis test.
+```{r}
+datadata_kruswall <- kruskal.test(depth_ave ~ metric, data = datadata)
+
+datadata_kruswall
+
+# depth_ave: p-value = 0.4673
+# distance to shore: p-value = 0.3366
+```
+Kruskal Wallis test is the better test for this data because we violate the assumtions of the ANOVA, but a Kruskal Wallis test does not require these assumptions. Kruskal Wallis is non-parametric and ranks-based assessment of medians. 
+
+```{r}
+alltogether_kruswall_depth <- kruskal.test(depth_ave ~ buddy, data = alltogether)
+
+alltogether_kruswall_depth
+# Kruskal-Wallis chi-squared = 0.15273, df = 3, p-value = 0.9848
+
+alltogether_kruswall_dist <- kruskal.test(distance_to_shore ~ buddy, data = alltogether)
+
+alltogether_kruswall_dist
+# Kruskal-Wallis chi-squared = 0.10674, df = 3, p-value = 0.991
+
+```
+
+
+### Sample sizes
+Determining the n values of distance from shore and average depth for each ocean activity in datadata
+
+summary_datadata has the median values
+nvals_datadata has the n values
+```{r}
+summary_datadata <- datadata %>% 
+  group_by(metric) %>% 
+  summarize(median_depth = median(depth_ave, na.rm = TRUE),
+            median_dist = median(distance_to_shore, na.rm = TRUE))
+
+
+nvals_datadata_depth <- datadata %>% 
+  filter(depth_ave != "NA") %>% 
+  group_by(metric) %>% 
+  summarize(n_depth = n())
+
+nvals_datadata_dist <- datadata %>% 
+  filter(distance_to_shore != "NA") %>% 
+  group_by(metric) %>% 
+  summarize(n_dist = n()) %>% 
+  rename(metric_dist = metric) #renaming because r was getting confused by 2 columns with same name in cbind()
+
+nvals_datadata <- as_tibble(cbind(nvals_datadata_depth, nvals_datadata_dist)) %>% 
+  select("metric", "n_depth", "n_dist")
+              
+```
+
+
+Determining the n values of distance from shore and average depth for each ocean activity in alltogether
+
+summary_alltogether has the median values
+nvals_alltogether has the n values
+```{r}
+summary_alltogether <- alltogether %>% 
+  group_by(buddy) %>% 
+  summarize(median_depth = median(depth_ave, na.rm = TRUE),
+            median_dist = median(distance_to_shore, na.rm = TRUE),
+            max_depth = max(depth_max, na.rm = TRUE),
+            min_depth = min(depth_min, na.rm = TRUE),
+            max_dist = max(distance_to_shore, na.rm = TRUE),
+            min_dist = min(distance_to_shore, na.rm = TRUE))
+```
+
