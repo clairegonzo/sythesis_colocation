@@ -1,10 +1,11 @@
 ---
-title: "Aqauculture Deep Dive"
+title: "Aquaculture Deep Dive"
 author: 'By: Claire Gonzales'
 date: '2022-08-16'
 output: 
   html_document: 
     theme: lumen
+    toc: yes
 ---
 
 
@@ -19,17 +20,19 @@ library(tidyselect)
 library(here)
 library(ggbeeswarm)
 library(dplyr)
-library(rstatix)
+library(cowplot)
+library(broom)
 
 ```
 
-
-```{r}
+## Initial data exploration
+Hidden
+```{r, eval=FALSE, include=FALSE}
 mydata <- read_csv(here("data", "Data_total_working_for_r.csv"))
   
 ```
 
-```{r}
+```{r, eval=FALSE, include=FALSE}
 aquaculture <- mydata %>% 
   select(id, year, aquaculture_present, ecology, governance, socioecon) %>% 
   filter(aquaculture_present == "1")
@@ -44,7 +47,7 @@ aqua_mini <- aquaculture %>%
   
 ```
 
-```{r}
+```{r, eval=FALSE, include=FALSE}
 wind <- mydata %>% 
   select(id, year, wind_present, ecology, governance, socioecon) %>% 
   filter(wind_present == "1")
@@ -58,26 +61,29 @@ wind_mini <- wind %>%
   )
 ```
 
-```{r}
+```{r, eval=FALSE, include=FALSE}
 max_depth_m <- as.numeric(c(25, 16, 33.4, 40, 200, 500, 70, 40, 300, 60, 40, 200, 300, 200))
 
 median(max_depth_m)
 
 ```
 
-```{r}
+```{r, eval=FALSE, include=FALSE}
 distance_km <- as.numeric(c(15, 16, 55, 10, 30, 8, 1.2, 1.9, 37, 60, 22, 16, 32, 25))
 
 median(distance_km)
 ```
 
-```{r}
+```{r, eval=FALSE, include=FALSE}
 sigwaveheight_m <- as.numeric(c(1.5, 1.25, 2.1, 2, 2, 1.8, 5))
 
 median(sigwaveheight_m)
 ```
 
-## Incorporating metrics 
+## Metrics across top three sectors 
+
+### Aquaculture metric wrangling
+
 Looking into aquaculture metrics
 ```{r}
 aqdata <- read.csv(here("data", "Data_total_working_for_r_aq.csv"))
@@ -100,7 +106,9 @@ aqdata_sub_2 <- aqdata %>%
   #           chla_median = median(chla, na.rm = TRUE))
 ```
 
-Looking at wind metrics
+### Wind metric wrangling
+
+Looking at wind metrics only
 ```{r}
 winddata <- read.csv(here("data", "Data_total_working_for_r_wind.csv"))
 ```
@@ -119,6 +127,10 @@ winddata_sub <- winddata %>%
   #           chla_median = median(chla, na.rm = TRUE))
 ```
 
+### Wave metric wrangling
+
+Only looking at wave metrics
+
 ```{r}
 wavedata <- read.csv(here("data", "Data_total_working_for_r_wave.csv"))
 ```
@@ -129,18 +141,66 @@ wavedata_sub <- wavedata %>%
   select("metric", "id", "title", "distance_to_shore", "depth_min", "depth_max", "depth_ave", "wave_height_average_m", "sst_c", "chla")
 ```
 
+### Rbinding metrics from 3 sectors together
+
+Creating 'datadata', which has all the metrics and is labeled by Aquaculture, Wind or Wave. DANGER: This data by nature has duplicates because some metrics in wave are also in wind, etc. **ONLY USE for graphing or to compare across sectors. Any examination of the data as a whole will be misleading.**
 
 ```{r}
 datadata <- rbind(aqdata_sub, winddata_sub, wavedata_sub)
 ```
 
 
-Comparing distances to shore across discipline
+### Fig 4a code
 
+Comparing listed depths across discipline (AQ, wave, and wind)
 ```{r}
-ggplot(data = datadata, aes(x = metric, y = distance_to_shore)) +
-  geom_beeswarm(aes(color = metric)) +
-  scale_color_manual(values = c("goldenrod2","cyan4","coral")) +
+fig4a <- ggplot(data = datadata, aes(x = metric, y = depth_ave)) +
+  geom_beeswarm(size = 2, cex = 3, color = "darkgray") +
+  #scale_color_manual(values = c("goldenrod2","cyan4","coral")) +
+  geom_boxplot(fill = NA, width = 0.3, outlier.color = NA) +
+  stat_summary(fun=median, 
+               geom="point", 
+               shape=20, 
+               size=3, 
+               color="black", 
+               fill="black") +
+    labs(x = "Ocean activity",
+         y = "Average depth (m)") +
+  theme_minimal() +
+  theme(legend.title = element_blank()) +
+  scale_y_reverse()
+
+```
+
+```{r, include = FALSE, eval = FALSE}
+# old code for figure 4(a and kinda b) that used color coding. Redoing with shape coding
+
+# ggplot(data = datadata, aes(x = metric, y = depth_ave)) +
+#   geom_beeswarm(aes(color = metric), size = 2, cex = 3) +
+#   scale_color_manual(values = c("goldenrod2","cyan4","coral")) +
+#   geom_boxplot(fill = NA, width = 0.3, outlier.color = NA) +
+#   stat_summary(fun=median, 
+#                geom="point", 
+#                shape=20, 
+#                size=3, 
+#                color="black", 
+#                fill="black") +
+#     labs(x = "Ocean Activity",
+#          y = "Average Depth (m)") +
+#   theme_minimal() +
+#   theme(legend.title = element_blank()) +
+#   scale_y_reverse()
+```
+
+**Figure 4a.** Shows the average depth (meters) across the three most common ocean activities listed in co-location literature. Metrics within aquaculture (n = 14), wave energy (n = 22), and wind energy (n = 35) sectors all reflect similar distances from shore. Significance across these three data groups was checked using a Kruskal-Wallis test (p = 0.4673). 
+
+
+### Fig 5a code
+
+Comparing distances to shore across discipline (AQ, wave, and wind)
+```{r}
+fig5a <- ggplot(data = datadata, aes(x = metric, y = distance_to_shore)) +
+  geom_beeswarm(color = "darkgray", size = 2, cex = 3) +
   geom_boxplot(fill = NA, width = 0.3, outlier.color = NA) +
   stat_summary(fun=median, 
                geom="point", 
@@ -151,32 +211,66 @@ ggplot(data = datadata, aes(x = metric, y = distance_to_shore)) +
   labs(x = "Ocean activity",
        y = "Distance from shore (m)") +
   theme_minimal() +
-  theme(legend.title = element_blank())
+  theme(legend.title = element_blank(), legend.position = "none")
 
 ```
 
-**Figure 4.** Shows the distances from shore (meters) across the three most common ocean activities listed in co-location literature. Metrics withing aquaculture (n = ), wave energy (n = ), and wind energy (n = ) all reflect  similar distances from shore. Significance across these three data groups was checked using a Kruskal-Wallis test (p = 0.394).
+**Figure 4b.** Shows the distances from shore (meters) across the three most common ocean activities listed in co-location literature. Metrics within aquaculture (n = 14), wave energy (n = 19), and wind energy (n = 32) sectors all reflect similar distances from shore. Significance across these three data groups was checked using a Kruskal-Wallis test (p = 0.3366).
 
-Comparing maximum listed depths across discipline
+#### ANOVA of aquaculture metrics
+
+Comparing aquaculture metrics against wind and wave
 ```{r}
-ggplot(data = datadata, aes(x = metric, y = depth_ave)) +
-  geom_beeswarm(aes(color = metric)) +
-  scale_color_manual(values = c("goldenrod2","cyan4","coral")) +
-  geom_boxplot(fill = NA, width = 0.3, outlier.color = NA) +
-  stat_summary(fun=median, 
-               geom="point", 
-               shape=20, 
-               size=3, 
-               color="black", 
-               fill="black") +
-    labs(x = "Ocean Activity",
-         y = "Average Depth (m)") +
-  theme_minimal() +
-  theme(legend.title = element_blank())
+datadata_anova <- aov(depth_ave ~ metric, data = datadata)
+
+summary(datadata_anova)
+
+# depth_ave: p-value = 0.551
+# distance to shore: p-value = 0.394
+
 ```
 
-**Figure 5.** Shows the average depth (meters) across the three most common ocean activities listed in co-location literature. Metrics withing aquaculture (n = ), wave energy (n = ), and wind energy (n = ) all reflect  similar distances from shore. Significance across these three data groups was checked using a Kruskal-Wallis test (p = 0.551). 
+Making the same comparison using a Kruskal-Wallis test.
+```{r}
+datadata_kruswall <- kruskal.test(depth_ave ~ metric, data = datadata)
 
+datadata_kruswall
+
+# depth_ave: p-value = 0.4673
+# distance to shore: p-value = 0.3366
+```
+Kruskal Wallis test is the better test for this data because we violate the assumtions of the ANOVA, but a Kruskal Wallis test does not require these assumptions. Kruskal Wallis is non-parametric and ranks-based assessment of medians. 
+
+### Sample sizes
+Determining the n values of distance from shore and average depth for each ocean activity in datadata
+
+summary_datadata has the median values
+nvals_datadata has the n values
+```{r}
+summary_datadata <- datadata %>% 
+  group_by(metric) %>% 
+  summarize(median_depth = median(depth_ave, na.rm = TRUE),
+            median_dist = median(distance_to_shore, na.rm = TRUE))
+
+
+nvals_datadata_depth <- datadata %>% 
+  filter(depth_ave != "NA") %>% 
+  group_by(metric) %>% 
+  summarize(n_depth = n())
+
+nvals_datadata_dist <- datadata %>% 
+  filter(distance_to_shore != "NA") %>% 
+  group_by(metric) %>% 
+  summarize(n_dist = n()) %>% 
+  rename(metric_dist = metric) #renaming because r was getting confused by 2 columns with same name in cbind()
+
+nvals_datadata <- as_tibble(cbind(nvals_datadata_depth, nvals_datadata_dist)) %>% 
+  select("metric", "n_depth", "n_dist")
+              
+```
+
+
+## Other metric comparisons (low n values)
 
 Comparing minimum listed depths across discipline
 ```{r, include=FALSE, eval=FALSE}
@@ -223,78 +317,30 @@ ggplot(data = datadata, aes(x = metric, y = sst_c)) +
   theme_minimal()
 ```
 
-## ANOVA of aquaculture metrics
-
-Comparing aquaculture metrics against wind and wave
-```{r}
-datadata_anova <- aov(depth_ave ~ metric, data = datadata)
-
-summary(datadata_anova)
-
-# depth_ave: p-value = 0.551
-# distance to shore: p-value = 0.394
-
-```
-
-Making the same comparison using a Kruskal-Wallis test.
-```{r}
-datadata_kruswall <- kruskal.test(depth_ave ~ metric, data = datadata)
-
-datadata_kruswall
-
-# depth_ave: p-value = 0.4673
-# distance to shore: p-value = 0.3366
-```
-Kruskal Wallis test is the better test for this data because we violate the assumtions of the ANOVA, but a Kruskal Wallis test does not require these assumptions. Kruskal Wallis is non-parametric and ranks-based assessment of medians 
-
-### Sample sizes
-Determining the n values of distance from shore and average depth for each ocean activity in datadata
-
-summary_datadata has the median values
-nvals_datadata has the n values
-```{r}
-summary_datadata <- datadata %>% 
-  group_by(metric) %>% 
-  summarize(median_depth = median(depth_ave, na.rm = TRUE),
-            median_dist = median(distance_to_shore, na.rm = TRUE))
+## Examining aquaculture metrics ONLY
+Using 'aqdata_sub_2' from above to examine aquacutlure metrics more closely.
 
 
-nvals_datadata_depth <- datadata %>% 
-  filter(depth_ave != "NA") %>% 
-  group_by(metric) %>% 
-  summarize(n_depth = n())
-
-nvals_datadata_dist <- datadata %>% 
-  filter(distance_to_shore != "NA") %>% 
-  group_by(metric) %>% 
-  summarize(n_dist = n()) %>% 
-  rename(metric_dist = metric) #renaming because r was getting confused by 2 columns with same name in cbind()
-
-nvals_datadata <- as_tibble(cbind(nvals_datadata_depth, nvals_datadata_dist)) %>% 
-  select("metric", "n_depth", "n_dist")
-              
-```
-
-
-### Depth of Aquaculture Projects
+### What is aquaculture being co-located with?
+Creating a dataset called 'alltogether' that shows aquaculture metrics, grouped by the activity it is being co-located with (aka the "buddy")
 
 ```{r}
 aqua_wind <- aqdata_sub_2 %>% 
   filter(wind_present == "1") %>% 
-  mutate(buddy = rep("wind", 16))
+  mutate(buddy = rep("Wind", 16))
 ```
 
 ```{r}
 aqua_wave <- aqdata_sub_2 %>% 
   filter(wave_present == "1") %>% 
-  mutate(buddy = rep("wave", 4))
+  mutate(buddy = rep("Wave", 4))
 
 ```
 
 ```{r}
 aqua_tidal <- aqdata_sub_2 %>% 
   filter(tidal_present == "1") %>% 
-  mutate(buddy = rep("tidal", 2))
+  mutate(buddy = rep("Tidal", 2))
 
 
 ```
@@ -302,20 +348,28 @@ aqua_tidal <- aqdata_sub_2 %>%
 ```{r}
 aqua_other <- aqdata_sub_2 %>% 
   filter(other_present == "1") %>% 
-  mutate(buddy = rep("other", 7))
+  mutate(buddy = rep("Other", 7))
 
 
 ```
 
 ```{r}
 alltogether <- as_tibble(rbind(aqua_wind, aqua_wave, aqua_tidal, aqua_other))
+
+alltogether$buddy <- factor(alltogether$buddy,
+                            levels = c("Wind", 
+                                       "Wave", 
+                                       "Tidal", 
+                                       "Other"))
 ```
 
 
-Graphing the depth differences of aquaculture at different depths
+Graphing the depth differences of aquaculture at different depths. 
+**DANGER: this data set is misleading because of duplicates/overlapping values across buddies that here are being depicted as different values**
+
 ```{r}
 ggplot(data = alltogether, aes(x = metric, y = depth_ave)) +
-  geom_jitter(aes(color = buddy)) +
+  geom_jitter(aes(color = buddy), width = 0.25) +
   scale_color_manual(values = c("goldenrod2","cyan4","coral", "darkviolet")) +
   geom_boxplot(fill = NA, width = 0.3, outlier.color = NA) +
   stat_summary(fun=median,
@@ -326,12 +380,17 @@ ggplot(data = alltogether, aes(x = metric, y = depth_ave)) +
                fill="black") +
   theme_minimal() +
   scale_y_reverse()
+
+# I like this figure but I think it's too misleading so I shouldn't use
 ```
 
-
+Graphing the depth differences of aquaculture at different "buddies"
 ```{r}
+
+# original code with color coding. Potential code for shape coding in next code chunk
+
 ggplot(data = alltogether, aes(x = buddy, y = depth_ave)) +
-  geom_beeswarm(aes(color = buddy)) +
+  geom_beeswarm(aes(color = buddy), cex = 2) +
   scale_color_manual(values = c("goldenrod2","cyan4","coral", "darkviolet")) +
   geom_boxplot(fill = NA, width = 0.3, outlier.color = NA) +
   stat_summary(fun=median,
@@ -340,14 +399,35 @@ ggplot(data = alltogether, aes(x = buddy, y = depth_ave)) +
                size=3,
                color="black",
                fill="black") +
+  labs(x = "Co-locating activity",
+       y = "Average depth (m)") +
   theme_minimal() +
+  theme(legend.title = element_blank()) +
   scale_y_reverse()
+
 ```
 
-Graphing the depth differences of aquaculture at different distances from shore
+```{r, include=FALSE, eval=FALSE}
+
+# ggplot(data = alltogether, aes(x = buddy, y = depth_ave)) +
+#   geom_beeswarm(aes(shape = buddy), cex = 2, size = 2) +
+#   geom_boxplot(fill = NA, width = 0.4, outlier.color = NA) +
+#   stat_summary(fun=median,
+#                geom="line",
+#                color="black",
+#                fill="black") +
+#   labs(x = "Co-locating activity",
+#        y = "Average depth (m)") +
+#   theme_minimal() +
+#   scale_y_reverse()
+```
+
+
+Graphing the depth differences of aquaculture at different distances from shore 
+**DANGER: same misleading data issue as above**
 ```{r}
 ggplot(data = alltogether, aes(x = metric, y = distance_to_shore)) +
-  geom_jitter(aes(color = buddy)) +
+  geom_jitter(aes(color = buddy), width = 0.25) +
   scale_color_manual(values = c("goldenrod2","cyan4","coral", "darkviolet")) +
   geom_boxplot(fill = NA, width = 0.3, outlier.color = NA) +
   stat_summary(fun=median, 
@@ -359,9 +439,10 @@ ggplot(data = alltogether, aes(x = metric, y = distance_to_shore)) +
   theme_minimal()
 ```
 
+Graphing the differences in distance to shore of aquaculture across different "buddies"
 ```{r}
 ggplot(data = alltogether, aes(x = buddy, y = distance_to_shore)) +
-  geom_beeswarm(aes(color = buddy)) +
+  geom_beeswarm(aes(color = buddy), cex = 2) +
   scale_color_manual(values = c("goldenrod2","cyan4","coral", "darkviolet")) +
   geom_boxplot(fill = NA, width = 0.3, outlier.color = NA) +
   stat_summary(fun=median, 
@@ -373,20 +454,112 @@ ggplot(data = alltogether, aes(x = buddy, y = distance_to_shore)) +
   theme_minimal()
 ```
 
-## aquaculture depths with no duplicates
 
+## Plan for Fig 4&5
+Here, I am trying something new. Instead of having the Fig 4 panes of ave depth and distance from shore for aqua, wave and wind and THEN having a fig 5 of panes with the buddy of aqua dataset, This section will try having:
+
+fig 4a: Ave Depth of aqua, wave and wind
+fig 4b: co-location "buddies" of aqua depth metrics
+fig 5a: Distance from shore of aqua, wave and wind
+fig 5b: co-location "buddies" of aqua distance from shore metrics
+
+### Fig 4b code
 ```{r}
-ggplot(data = aqdata_sub_2, aes(x = metric, y = depth_ave)) +
-  geom_jitter(aes(color = metric)) +
-  # scale_color_manual(values = c("goldenrod2","cyan4","coral", "darkviolet")) +
-  geom_boxplot(fill = NA, width = 0.3, outlier.color = NA) +
-  stat_summary(fun=median,
-               geom="point",
-               shape=20,
-               size=3,
-               color="black",
-               fill="black") +
+
+fig4b <- ggplot(data = alltogether, aes(x = buddy, y = depth_ave)) +
+  geom_beeswarm(cex = 3, size = 2) +
+ # scale_color_manual(values = c("goldenrod2","cyan4","coral", "darkviolet")) +
+  # geom_boxplot(
+  #   #data = aqdata_sub_2, 
+  #   fill = NA, width = 0.3, outlier.color = NA) +
+  # stat_summary(fun=median,
+  #              geom="point",
+  #              shape=20,
+  #              size=3,
+  #              color="black",
+  #              fill="black") +
+  labs(x = "Aquaculture co-located activity",
+       y = "Average depth (m)") +
   theme_minimal() +
+  theme(
+    #axis.text.x = element_text(angle=60), 
+        legend.title = element_blank()) +
   scale_y_reverse()
+
 ```
 
+
+### Fig 5b code
+```{r}
+
+fig5b <- ggplot(data = alltogether, aes(x = buddy, y = distance_to_shore)) +
+  geom_beeswarm(cex = 3, size = 2) +
+  scale_color_manual(values = c("goldenrod2","cyan4","coral", "darkviolet")) +
+  labs(x = "Aquaculture co-located activity",
+       y = "Distance from shore (m)") +
+  theme_minimal() +
+  theme(legend.title = element_blank())
+
+```
+
+### Patching fig 4 together
+
+```{r}
+#legend <- get_legend(fig4a)
+
+plot_grid(
+  fig4a + theme(legend.position = "none"), 
+  fig4b + theme(legend.position = "none"), 
+  align = "vh", 
+  labels = c("A", "B"))
+
+```
+
+```{r, include = FALSE, eval = FALSE}
+
+#Old code that creates a pane for the original figure 4, with a shared legend on the right side.
+# rel_widths command helped with the spacing, so it made the legend its own pane, 
+# but that pane was much narrower.
+
+# legend <- get_legend(fig4a)
+# 
+# prow <- plot_grid(
+#   fig4a + theme(legend.position = "none"), 
+#   fig4b + theme(legend.position = "none"), 
+#   align = "vh", 
+#   labels = c("A", "B")) 
+#           
+# plot_grid(prow, legend, rel_widths = c(2, .4))   
+```
+
+
+**Figure 4.** Shows (A) the average depth (meters) across aquaculture (n = 14), wave energy (n = 22), and wind energy (n = 35) sectors. These three ocean activities all reflect similar average reported depths (Kruskal-Wallis p = 0.467)...
+
+
+### writing jpeg for fig4
+
+```{r, include=FALSE, eval=FALSE}
+ggsave(filename = here("figures", "fig4.jpeg"), width = 8, height = 5, units = "in")
+```
+
+
+### Patching fig 5 together
+
+```{r}
+#legend <- get_legend(fig4a)
+
+plot_grid(
+  fig5a + theme(legend.position = "none"), 
+  fig5b + theme(legend.position = "none"), 
+  align = "vh", 
+  labels = c("A", "B"))
+
+```
+
+**Figure 5.** Pane (A) shows the distance from shore (meters) across aquaculture (n = 14), wave energy (n = 19), and wind energy (n = 32). These sectors all reflect similar distances from shore (Kruskal-Wallis p = 0.337). Pane (B) …
+
+### writing jpeg for fig5
+
+```{r, include=FALSE, eval=FALSE}
+ggsave(filename = here("figures", "fig5.jpeg"), width = 8, height = 5, units = "in")
+```
