@@ -246,7 +246,8 @@ ggplot(data = total_df_tidy, aes(x = activity, y = counts)) +
 ```{r, eval=FALSE, include= FALSE}
 
 # NOTES FROM JULIET on how to fix the ordering problem of the x axis and legend
-# "Here Is an example of plot where I did this! It was tricky but you just have to redefine the column in the df with the nested `factors()` and `levels()` functions, then you can keep the code for the ggplot the same, just defining the x axis as the column name as you did before" 
+# "Here Is an example of plot where I did this! It was tricky but you just have to redefine the column 
+# in the df with the nested `factors()` and `levels()` functions, then you can keep the code for the ggplot the same, just defining the x axis as the column name as you did before" 
 
 # hist_data_common_name$common_name <- factor(hist_data_common_name$common_name,
 #                                             levels = c("red fox",
