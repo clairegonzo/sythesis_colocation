@@ -209,7 +209,7 @@ fig5a <- ggplot(data = datadata, aes(x = metric, y = distance_to_shore)) +
                color="black", 
                fill="black") +
   labs(x = "Ocean activity",
-       y = "Distance from shore (m)") +
+       y = "Distance from shore (km)") +
   theme_minimal() +
   theme(legend.title = element_blank(), legend.position = "none")
 
@@ -275,20 +275,20 @@ Creating a dataset called 'alltogether' that shows aquaculture metrics, grouped 
 ```{r}
 aqua_wind <- aqdata_sub_2 %>% 
   filter(wind_present == "1") %>% 
-  mutate(buddy = rep("Wind", 16))
+  mutate(buddy = rep("Wind", 19))
 ```
 
 ```{r}
 aqua_wave <- aqdata_sub_2 %>% 
   filter(wave_present == "1") %>% 
-  mutate(buddy = rep("Wave", 4))
+  mutate(buddy = rep("Wave", 8))
 
 ```
 
 ```{r}
 aqua_tidal <- aqdata_sub_2 %>% 
   filter(tidal_present == "1") %>% 
-  mutate(buddy = rep("Tidal", 2))
+  mutate(buddy = rep("Tidal", 3))
 
 
 ```
@@ -296,7 +296,7 @@ aqua_tidal <- aqdata_sub_2 %>%
 ```{r}
 aqua_other <- aqdata_sub_2 %>% 
   filter(other_present == "1") %>% 
-  mutate(buddy = rep("Other", 7))
+  mutate(buddy = rep("Other", 8))
 
 
 ```
@@ -315,7 +315,7 @@ alltogether$buddy <- factor(alltogether$buddy,
 Graphing the depth differences of aquaculture at different depths. 
 **DANGER: this data set is misleading because of duplicates/overlapping values across buddies that here are being depicted as different values**
 
-```{r}
+```{r, eval=FALSE, include=FALSE}
 ggplot(data = alltogether, aes(x = metric, y = depth_ave)) +
   geom_jitter(aes(color = buddy), width = 0.25) +
   scale_color_manual(values = c("goldenrod2","cyan4","coral", "darkviolet")) +
@@ -444,7 +444,7 @@ fig5b <- ggplot(data = alltogether, aes(x = buddy, y = distance_to_shore)) +
   geom_beeswarm(cex = 3, size = 2) +
   scale_color_manual(values = c("goldenrod2","cyan4","coral", "darkviolet")) +
   labs(x = "Aquaculture co-located activity",
-       y = "Distance from shore (m)") +
+       y = "Distance from shore (km)") +
   theme_minimal() +
   theme(legend.title = element_blank())
 
@@ -487,7 +487,7 @@ plot_grid(
 ### writing jpeg for fig4
 
 ```{r, include=FALSE, eval=FALSE}
-ggsave(filename = here("figures", "fig4.jpeg"), width = 8, height = 5, units = "in")
+ggsave(filename = here("figures", "fig4_new2.jpeg"), width = 8, height = 5, units = "in")
 ```
 
 
@@ -509,7 +509,7 @@ plot_grid(
 ### writing jpeg for fig5
 
 ```{r, include=FALSE, eval=FALSE}
-ggsave(filename = here("figures", "fig5.jpeg"), width = 8, height = 5, units = "in")
+ggsave(filename = here("figures", "fig5_new2.jpeg"), width = 8, height = 5, units = "in")
 ```
 
 
@@ -533,8 +533,8 @@ datadata_kruswall <- kruskal.test(depth_ave ~ metric, data = datadata)
 
 datadata_kruswall
 
-# depth_ave: p-value = 0.4673
-# distance to shore: p-value = 0.3366
+# depth_ave: p-value = p-value = 0.387
+# distance to shore: p-value = 0.5923
 ```
 Kruskal Wallis test is the better test for this data because we violate the assumtions of the ANOVA, but a Kruskal Wallis test does not require these assumptions. Kruskal Wallis is non-parametric and ranks-based assessment of medians. 
 
@@ -542,12 +542,12 @@ Kruskal Wallis test is the better test for this data because we violate the assu
 alltogether_kruswall_depth <- kruskal.test(depth_ave ~ buddy, data = alltogether)
 
 alltogether_kruswall_depth
-# Kruskal-Wallis chi-squared = 0.15273, df = 3, p-value = 0.9848
+# Kruskal-Wallis chi-squared = 0.70418, df = 3, p-value = 0.8722
 
 alltogether_kruswall_dist <- kruskal.test(distance_to_shore ~ buddy, data = alltogether)
 
 alltogether_kruswall_dist
-# Kruskal-Wallis chi-squared = 0.10674, df = 3, p-value = 0.991
+# Kruskal-Wallis chi-squared = 0.12126, df = 3, p-value = 0.9892
 
 ```
 
