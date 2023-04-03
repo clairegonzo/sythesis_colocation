@@ -1,23 +1,30 @@
-"","lme","count"
-"1","Arabian Sea",1
-"2","Baltic Sea",9
-"3","California Current",1
-"4","Canary Current",1
-"5","Celtic Biscay Shelf",12
-"6","Celtic-Biscay Shelf",1
-"7","East China Sea",2
-"8","Faroe Plateau",1
-"9","Gulf of Alaska",1
-"10","Gulf of California",1
-"11","Gulf of Mexico",2
-"12","Iberian Coastal",11
-"13","Mediterranean Sea",17
-"14","NE U.S. Continental Shelf",2
-"15","New Zealand Shelf",1
-"16","None",21
-"17","North Sea",34
-"18","Norwegian Shelf",1
-"19","SE U.S. Continental Shelf",1
-"20","Sea of Japan",1
-"21","South China Sea",1
-"22","West-Central Australian Shelf",1
+,lme,count
+1,Arabian Sea,1
+2,Baltic Sea,10
+3,Black Sea,2
+4,California Current,2
+5,Canary Current,1
+6,Celtic Biscay Shelf,15
+7,Celtic-Biscay Shelf,1
+8,East China Sea,3
+9,East-Central Australian Sea,1
+10,Faroe Plateau,1
+11,Gulf of Alaska,1
+12,Gulf of California,1
+13,Gulf of Mexico,2
+14,Iberian Coastal,14
+15,Insular Pacific-Hawaiian,1
+16,Mediterranean Sea,22
+17,NE U.S. Continental Shelf,3
+18,New Zealand Shelf,1
+19,None,26
+20,North Australian Shelf,1
+21,North Sea,39
+22,Northeast Australian Shelf,1
+23,Norwegian Shelf,1
+24,SE U.S. Continental Shelf,1
+25,Sea of Japan,1
+26,South China Sea,2
+27,Southeast Australian Shelf,1
+28,West-Central Australian Shelf,1
+29,Yellow Sea,1
