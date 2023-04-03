@@ -203,11 +203,11 @@ ggplot(data = total_df_tidy, aes(x = activity, y = counts)) +
   theme_classic() +
   scale_fill_paletteer_d(palette = "ggprism::black_and_white") +
   # theme(axis.text.x = element_text(angle = 30)) +
-  geom_text(aes("Aquaculture", 82,label = "n=80", hjust= .5), size = 3) + # n values from sums df
-  geom_text(aes("Tidal", 49,label = "n=47", hjust= .5), size = 3) +
-  geom_text(aes("Wave", 87,label = "n=85", hjust= .5), size = 3) +
-  geom_text(aes("Wind", 118,label = "n=116", hjust= .5), size = 3) +
-  geom_text(aes("Other", 68,label = "n=66", hjust= .5), size = 3)
+  geom_text(aes("Aquaculture", 102,label = "n=99", hjust= .5), size = 3) + # n values from sums df
+  geom_text(aes("Tidal", 60,label = "n=57", hjust= .5), size = 3) +
+  geom_text(aes("Wave", 112,label = "n=109", hjust= .5), size = 3) +
+  geom_text(aes("Wind", 149,label = "n=146", hjust= .5), size = 3) +
+  geom_text(aes("Other", 84,label = "n=81", hjust= .5), size = 3)
 
 # colorful pallete is "calecopal::bigsur"
 ```
@@ -215,7 +215,7 @@ ggplot(data = total_df_tidy, aes(x = activity, y = counts)) +
 **Figure 2.** Shows each ocean activity and its frequency of co-location with another ocean activity. Wind energy was most often referenced being co-located with other ocean activities (n = `r sum$total[4]`), followed by wave energy (n = `r sum$total[3]`), aquaculture (n = `r sum$total[1]`), and tidal energy (n = `r sum$total[2]`). Other forms of marine energy or ocean activities were referenced being co-located with other ocean activities `r sum$total[5]` times. Many publications referenced multiple interacting co-locating activities. Instances in which ocean activities are co-located with themselves are not considered here.  
 
 ```{r, eval = FALSE, include=FALSE}
-ggsave(filename = here("figures", "fig2.jpeg"), width = 7, height = 5, units = "in")
+ggsave(filename = here("figures", "fig2_new.jpeg"), width = 7, height = 5, units = "in")
 ```
 
 
@@ -233,13 +233,14 @@ ggplot(data = total_df_tidy, aes(x = activity, y = counts)) +
        y = "Percentage",
        fill = "Co-located Activity") +
   theme_classic() +
-  scale_fill_paletteer_d(palette = "calecopal::bigsur") +
-  theme(axis.text.x = element_text(angle = 30)) +
-  geom_text(aes("Aquaculture",1.03,label = "n=80", hjust= .5), size = 3) + # n values from sums df
-  geom_text(aes("Tidal",1.03,label = "n=47", hjust= .5), size = 3) +
-  geom_text(aes("Wave",1.03,label = "n=85", hjust= .5), size = 3) +
-  geom_text(aes("Wind",1.03,label = "n=116", hjust= .5), size = 3) +
-  geom_text(aes("Other",1.03,label = "n=66", hjust= .5), size = 3)
+   scale_fill_paletteer_d(palette = "ggprism::black_and_white") +
+  #scale_fill_paletteer_d(palette = "calecopal::bigsur") +
+  #theme(axis.text.x = element_text(angle = 30)) +
+  geom_text(aes("Aquaculture",1.03,label = "n=99", hjust= .5), size = 3) + # n values from sums df
+  geom_text(aes("Tidal",1.03,label = "n=57", hjust= .5), size = 3) +
+  geom_text(aes("Wave",1.03,label = "n=109", hjust= .5), size = 3) +
+  geom_text(aes("Wind",1.03,label = "n=146", hjust= .5), size = 3) +
+  geom_text(aes("Other",1.03,label = "n=81", hjust= .5), size = 3)
 ```
 
 
