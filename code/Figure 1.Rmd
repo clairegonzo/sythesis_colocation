@@ -61,8 +61,8 @@ g1 <- ggplot(data = data_sub, aes(x = year, y = count)) +
   labs(x = "Year",
        y = "Count") +
   ylim(0,15) +
-  theme_classic() +
-  geom_smooth(method = "lm")
+  theme_classic() 
+ # geom_smooth(method = "lm")
 
 # +
 #   theme(axis.text.x = element_text(angle = 45))
@@ -79,8 +79,8 @@ summary(g1_lm)
 
 tidy(g1_lm)
 
-## slope here is 0.9361 with an r^2 value of 0.769
-# "If everything else stays constant, on average we would expect an increase of .9361 co-location publications per year" and 76.9% of the variants are explained by this model
+## slope here is 0.8622 with an r^2 value of 0.7631
+# "If everything else stays constant, on average we would expect an increase of .8622 co-location publications per year" and 76.31% of the variants are explained by this model
 
 ```
 
@@ -94,7 +94,7 @@ ggplotly(
   geom_line(size = .7) +
   labs(x = "Year",
        y = "Count") +
-  xlim(2013,2017) +
+  xlim(2013, 2017) +
   theme_classic() +
   geom_smooth(method = "lm")
 )
@@ -249,8 +249,8 @@ Using cowplot package and `plot_grid()` to patch panes 1 and 2 together
 ```{r}
 plot_grid(g1, g2, labels = c("A", "B"))
 
-ggsave(filename = here("figures", "fig1.jpeg"), width = 8, height = 4, units = "in")
+ggsave(filename = here("figures", "fig1_new.jpeg"), width = 8, height = 4, units = "in")
 
 ```
 
-**Figure 1.** Shows frequency of publications over time (years 2000-2020). **Pane A** reflects the total frequency of co-location publications published over time. **Pane B** reflects the frequency of co-location publications, separated by publication discipline (ie ecology, governance or socioeconomics), published over time.  
+**Figure 1.** Shows frequency of publications over time (years 2000-2022). **Pane A** reflects the total frequency of co-location publications published over time. **Pane B** reflects the frequency of co-location publications, separated by publication discipline (ie ecology, governance or socioeconomics), published over time.  
