@@ -73,12 +73,19 @@ ggplotly(g1)
 ```{r, include=FALSE, eval=FALSE}
 # regression of g1
 
-g1_lm <- lm(data_sub$count ~ data_sub$year)
+#g1_lm <- lm(data_sub$count ~ data_sub$year)
 
-summary(g1_lm)
+#summary(g1_lm)
 
-tidy(g1_lm)
+#tidy(g1_lm)
 
+
+## Use the natural log of the data!!!!
+g1_loglm <- lm(log(data_sub$count) ~ log(data_sub$year))
+
+summary(g1_loglm)
+
+tidy(g1_loglm)
 ## slope here is 0.8622 with an r^2 value of 0.7631
 # "If everything else stays constant, on average we would expect an increase of .8622 co-location publications per year" and 76.31% of the variants are explained by this model
 
