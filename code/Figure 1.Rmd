@@ -45,7 +45,7 @@ Subset to only look at year and types of co-location.
 
 ```{r}
 data_sub <- mydata %>% 
-  select(first_author, year, ecology, governance, socioecon) %>% 
+  select(first_author, year, ecology, governance, socioecon, horizon_scan, industry, impact, model, `pilot/testing`, emp) %>% 
   group_by(year) %>% 
   summarize(count = n())
 
@@ -125,7 +125,7 @@ This might be semi sloppy code and there might be a cleaner way to do this but I
 # now same for total section
 # I added this chunk much later (7/15) to try and visualize total line on same axis with category lines
 
-total <- rep(c("Total"), times = 12)
+total <- rep(c("Total"), times = 14)
 
 total_sub <- cbind(data_sub$year,
                    total,
@@ -151,7 +151,7 @@ data_sub_b_ecol <- mydata %>%
   group_by(year) %>% 
   summarize(count = sum(ecology))
 
-ecology <- rep(c("Ecology"), times = 12)
+ecology <- rep(c("Ecology"), times = 14)
 
 #colnames <- c("year", "discipline", "count")
 
@@ -162,7 +162,7 @@ ecol_sub <- cbind(data_sub_b_ecol$year,
 ecol_df <- data.frame(ecol_sub) %>% 
   rename(year = V1) %>% 
   rename(discipline = ecology) %>% 
-  rename(count = V3)
+  rename(count_di = V3)
 ```
 
 ```{r}
@@ -172,7 +172,7 @@ data_sub_b_socio <- mydata %>%
   group_by(year) %>% 
   summarize(count = sum(socioecon))
 
-socioecon <- rep(c("Socioeconomics"), times = 12)
+socioecon <- rep(c("Socioeconomics"), times = 14)
 
 
 socio_sub <- cbind(data_sub_b_socio$year,
@@ -182,7 +182,7 @@ socio_sub <- cbind(data_sub_b_socio$year,
 socio_df <- data.frame(socio_sub) %>% 
   rename(year = V1) %>% 
   rename(discipline = socioecon) %>% 
-  rename(count = V3)
+  rename(count_di = V3)
 
 ```
 
@@ -193,7 +193,7 @@ data_sub_b_gov <- mydata %>%
   group_by(year) %>% 
   summarize(count = sum(governance))
 
-governance <- rep(c("Governance"), times = 12)
+governance <- rep(c("Governance"), times = 14)
 
 
 gov_sub <- cbind(data_sub_b_gov$year,
@@ -203,17 +203,99 @@ gov_sub <- cbind(data_sub_b_gov$year,
 gov_df <- data.frame(gov_sub) %>% 
   rename(year = V1) %>% 
   rename(discipline = governance) %>% 
-  rename(count = V3)
+  rename(count_di = V3)
+```
+
+```{r}
+# 28 April 2023
+### Adding the motivations ###
+# running the above code now for HS, industry, and impact
+
+data_sub_b_hs <- mydata %>% 
+  select(first_author, year, horizon_scan) %>% 
+  group_by(year) %>% 
+  summarize(count = sum(horizon_scan))
+
+horizon_scanning <- rep(c("Horizon Scanning"), times = 14)
+
+
+hs_sub <- cbind(data_sub_b_hs$year,
+              horizon_scanning,
+              data_sub_b_hs$count)
+
+hs_df <- data.frame(hs_sub) %>% 
+  rename(year = V1) %>% 
+  rename(motive = horizon_scanning) %>% 
+  rename(count_mo = V3)
+
+
+```
+
+```{r}
+# for industry_dev motive
+
+data_sub_b_industry <- mydata %>% 
+  select(first_author, year, industry) %>% 
+  group_by(year) %>% 
+  summarize(count = sum(industry))
+
+industry_dev <- rep(c("Industry Development"), times = 14)
+
+
+industry_sub <- cbind(data_sub_b_industry$year,
+              industry_dev,
+              data_sub_b_industry$count)
+
+industry_df <- data.frame(industry_sub) %>% 
+  rename(year = V1) %>% 
+  rename(motive = industry_dev) %>% 
+  rename(count_mo = V3)
+
+```
+
+
+```{r}
+#for impact motive
+data_sub_b_impact <- mydata %>% 
+  select(first_author, year, impact) %>% 
+  group_by(year) %>% 
+  summarize(count = sum(impact))
+
+impact_risk <- rep(c("Impact/Risk"), times = 14)
+
+
+impact_sub <- cbind(data_sub_b_impact$year,
+              impact_risk,
+              data_sub_b_impact$count)
+
+impact_df <- data.frame(impact_sub) %>% 
+  rename(year = V1) %>% 
+  rename(motive = impact_risk) %>% 
+  rename(count_mo = V3)
+```
+
+```{r}
+total <- rep(c("Total"), times = 14)
+
+total_sub <- cbind(data_sub$year,
+                   total,
+                   data_sub$count
+                    )
+
+total_b_df <- data.frame(total_sub) %>% 
+  rename(year = V1) %>% 
+  rename(motive = total) %>% 
+  rename(count_mo = V3)
 ```
 
 
 ```{r}
 # rbinding the 3 dfs into one
 
-all_df <- rbind(#total_b_df, 
+discipline_df <- rbind(#total_b_df, 
                 ecol_df, gov_df, socio_df) %>% 
   mutate(year = as.numeric(year)) %>% 
-  mutate(count = as.integer(count))
+  mutate(count_di = as.integer(count_di))
 
 # class was checked and its a data frame
 
@@ -223,6 +305,13 @@ all_df <- rbind(#total_b_df,
 #                                        "Governance",
 #                                        "Socioeconomics"))
 
+motives_df <- rbind(#total_b_df, 
+                    hs_df, industry_df, impact_df) %>% 
+  mutate(year = as.numeric(year)) %>% 
+  mutate(count_mo = as.integer(count_mo))
+
+all_df <- merge(discipline_df, motives_df, by = "year")
+
 ```
 
 ### Pane 2 Viz
@@ -230,26 +319,82 @@ all_df <- rbind(#total_b_df,
 Using ggplotly() here to allow us to look at each value, when needed. 
 
 ```{r}
-g2 <- ggplot(data = all_df, aes(x = year, y = count)) +
-  geom_line(aes(linetype = discipline), color = "darkgray", 
+### pane two option for disciplines ####
+
+g2_dis <- ggplot(data = discipline_df, aes(x = year, y = count_di)) +
+  geom_line(aes(linetype = discipline), color = "darkgray",
             size = .7) +
   labs(x = "Year",
        y = "Count") +
   scale_y_continuous(limits = c(0,13), breaks = seq(0,13, by = 5)) +
   theme_classic() +
-  theme(legend.title = element_blank(), legend.position= 'top')
+  theme(plot.title = element_text(hjust = 0.5), legend.title = element_blank(), legend.position= 'top', legend.text=element_text(size=8)) +
+  #geom_line(data = data_sub, aes(x = year, y = count)) +
+  ylim(0,15)
 
-ggplotly(g2)
+ggplotly(g2_dis)
 ```
+
+```{r}
+# pane two option for MOTIVES
+g2_mo <- ggplot(data = motives_df, aes(x = year, y = count_mo)) +
+  geom_line(aes(linetype = motive), color = "darkgray", 
+            size = .7) +
+  labs(x = "Year",
+       y = "Count") +
+  scale_y_continuous(limits = c(0,13), breaks = seq(0,13, by = 5)) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5), legend.title = element_blank(), legend.position= 'top', legend.text=element_text(size=7)) +
+  geom_line(data = data_sub, aes(x = year, y = count)) +
+  ylim(0,15)
+
+ggplotly(g2_mo)
+```
+
+```{r}
+# second option for pane 2 with MOTIVES
+
+g3_mo <- ggplot(data = motives_df, aes(x = year, y = count_mo)) +
+  geom_bar(position="stack", stat="identity", aes(fill = motive)) +
+  labs(x = "Year",
+       y = "Count") +
+  #scale_y_continuous(limits = c(0,13), breaks = seq(0,13, by = 5)) +
+  theme_classic() +
+  scale_fill_paletteer_d(palette = "ggprism::black_and_white") +
+  theme(plot.title = element_text(hjust = 0.5), legend.title = element_blank(), legend.position= 'top', legend.text=element_text(size=8)) +
+  ylim(0,15)
+
+ggplotly(g3_mo)
+```
+
+```{r}
+# second option for pane 2 with MOTIVES
+
+g3_dis <- ggplot(data = discipline_df, aes(x = year, y = count_di)) +
+  geom_bar(position="stack", stat="identity", aes(fill = discipline)) +
+  labs(x = "Year",
+       y = "Count") +
+  scale_y_continuous(limits = c(0,15), breaks = seq(0,15, by = 5)) +
+  theme_classic() +
+  scale_fill_paletteer_d(palette = "ggprism::black_and_white") +
+  theme(plot.title = element_text(hjust = 0.5),legend.title = element_blank(), legend.position= 'top', legend.text=element_text(size=8))
+
+ggplotly(g3_dis)
+```
+
 
 ### Patching panes together
 
 Using cowplot package and `plot_grid()` to patch panes 1 and 2 together
-
+## pick up here - not working
 ```{r}
-plot_grid(g1, g2, labels = c("A", "B"))
+######### NOT WORKING BOOOOO ###########
+dis_mo <- plot_grid(g2_dis, g3_mo, nrow = 2, labels = c("B", "C"), align = "v")
 
-ggsave(filename = here("figures", "fig1_new.jpeg"), width = 8, height = 4, units = "in")
+plot_grid(g1, dis_mo, nrow = 1, align = "h", labels = c("A", " "))
+
+ggsave(filename = here("figures", "fig1_new_v1.jpeg"), width = 10, height = 6, units = "in")
+
 
 ```
 

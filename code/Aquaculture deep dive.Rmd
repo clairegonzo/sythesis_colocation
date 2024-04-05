@@ -164,11 +164,17 @@ fig4a <- ggplot(data = datadata, aes(x = metric, y = depth_ave)) +
                size=3, 
                color="black", 
                fill="black") +
+  #geom_line(xintercept = 11:100)
+  # geom_segment(aes(x = "Aquaculture", y = 11, xend = "Aquaculture", yend = 100), position = 0.5, color = "red") +
+  # geom_segment(aes(x = "Wave", y = 3, xend = "Wave", yend = 600, hjust = 0.35), color = "red") +
+  # geom_segment(aes(x = "Wind", y = 0, xend = "Wind", yend = 200, hjust = 0.35), color = "red") +
     labs(x = "Ocean activity",
          y = "Average depth (m)") +
   theme_minimal() +
   theme(legend.title = element_blank()) +
   scale_y_reverse()
+
+########### lines for in situ ranges here added using power point ###########
 
 ```
 
@@ -529,7 +535,7 @@ summary(datadata_anova)
 
 Making the same comparison using a Kruskal-Wallis test.
 ```{r}
-datadata_kruswall <- kruskal.test(depth_ave ~ metric, data = datadata)
+datadata_kruswall <- kruskal.test(distance_to_shore ~ metric, data = datadata)
 
 datadata_kruswall
 
@@ -561,7 +567,13 @@ nvals_datadata has the n values
 summary_datadata <- datadata %>% 
   group_by(metric) %>% 
   summarize(median_depth = median(depth_ave, na.rm = TRUE),
-            median_dist = median(distance_to_shore, na.rm = TRUE))
+            sd_depth = sd(depth_ave, na.rm = TRUE),
+            q3_depth = quantile(depth_ave, na.rm = TRUE, c(0.75)),
+            q1_depth = quantile(depth_ave, na.rm = TRUE, c(0.25)),
+            median_dist = median(distance_to_shore, na.rm = TRUE),
+            sd_dist = sd(distance_to_shore, na.rm = TRUE),
+            q3_dist = quantile(distance_to_shore, na.rm = TRUE, c(0.75)),
+            q1_dist = quantile(distance_to_shore, na.rm = TRUE, c(0.25)),)
 
 
 nvals_datadata_depth <- datadata %>% 
